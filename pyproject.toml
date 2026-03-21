@@ -1,0 +1,42 @@
+[project]
+name = "hyprland-schema"
+version = "0.1.0"
+description = "Typed Python schema for every Hyprland configuration option"
+requires-python = ">=3.12"
+license = "MIT"
+readme = "README.md"
+keywords = ["hyprland", "schema", "wayland", "compositor"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Developers",
+    "Topic :: Desktop Environment",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Repository = "https://github.com/BlueManCZ/hyprland-schema"
+
+[dependency-groups]
+dev = ["pyright>=1.1", "pytest>=9.0", "ruff>=0.15"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+only-packages = true
+
+[tool.hatch.build.targets.sdist]
+exclude = ["tests/"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
