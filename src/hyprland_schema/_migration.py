@@ -48,7 +48,7 @@ def apply_migration(
             del by_key[key]
 
         elif op["op"] == "add":
-            option = op["option"]
+            option = {**op["option"]}
             key = option["key"]
             if key in by_key:
                 raise MigrationError(f"add: option '{key}' already exists")
@@ -105,7 +105,7 @@ def compute_diff(
             continue
         old_opt = old_by_key[key]
         changed_fields: dict[str, list[Any]] = {}
-        for field_name in set(old_opt.keys()) | set(new_opt.keys()):
+        for field_name in old_opt.keys() | new_opt.keys():
             old_val = old_opt.get(field_name)
             new_val = new_opt.get(field_name)
             if old_val != new_val:

@@ -2,16 +2,12 @@
 
 import dataclasses
 from dataclasses import dataclass, fields
-from typing import Any, ClassVar, Self
+from typing import Any, Self
 
 
 @dataclass(frozen=True, slots=True)
 class HyprOption:
     """A single Hyprland configuration option with metadata."""
-
-    # Fields without defaults — always included in dict/JSON output.
-    # Derived automatically so adding a required field can't drift out of sync.
-    _REQUIRED_FIELDS: ClassVar[frozenset[str]] = frozenset()  # populated by _init_required_fields
 
     key: str
     section: tuple[str, ...]
@@ -31,7 +27,7 @@ class HyprOption:
         d: dict[str, Any] = {}
         for f in fields(self):
             val = getattr(self, f.name)
-            if f.name in self._REQUIRED_FIELDS or val is not None:
+            if f.name in _REQUIRED_FIELDS or val is not None:
                 d[f.name] = list(val) if isinstance(val, tuple) else val
         return d
 
@@ -47,9 +43,9 @@ class HyprOption:
         return cls(**kwargs)
 
 
-# Derive _REQUIRED_FIELDS from the dataclass definition after the class is complete.
-# This must happen at module level because frozen+slots dataclasses don't allow setattr.
-HyprOption._REQUIRED_FIELDS = frozenset(  # type: ignore[misc]
+# Fields without defaults — always included in dict/JSON output.
+# Derived automatically so adding a required field can't drift out of sync.
+_REQUIRED_FIELDS: frozenset[str] = frozenset(
     f.name
     for f in fields(HyprOption)
     if f.default is dataclasses.MISSING and f.default_factory is dataclasses.MISSING

@@ -79,6 +79,7 @@ Resolution order for `load()`:
 | `get_json()`             | `(*, indent=2) -> str`           | Full schema as a JSON string                |
 | `load(version)`          | `(str) -> Schema`                | Load schema for a specific Hyprland version |
 | `available_versions()`   | `() -> list[str]`                | All bundled versions, newest first          |
+| `MigrationError`         | `Exception`                      | Raised when a version migration fails       |
 
 ### Schema
 

@@ -18,12 +18,12 @@ import sys
 import warnings
 from collections.abc import Sequence
 from dataclasses import fields as dataclass_fields
-from datetime import datetime, timezone
 from pathlib import Path
+from time import gmtime, strftime
 from typing import Any
 
 from hyprland_schema._migration import build_options, compute_diff
-from hyprland_schema._model import HyprOption
+from hyprland_schema._model import _REQUIRED_FIELDS, HyprOption
 from hyprland_schema._parser import RAW_URL_TEMPLATE, fetch_header, parse_header
 from hyprland_schema._schema import SOURCE_URL_TEMPLATE, Schema
 
@@ -34,6 +34,11 @@ from hyprland_schema._schema import SOURCE_URL_TEMPLATE, Schema
 
 class SchemaError(Exception):
     """Raised when schema generation fails."""
+
+
+def _utc_timestamp() -> str:
+    """Return the current UTC time as an ISO 8601 string."""
+    return strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> None:
@@ -96,7 +101,7 @@ def _count_sections(options: Sequence[HyprOption]) -> int:
 
 def emit_json(options: Sequence[HyprOption], version: str, output_dir: Path) -> Path:
     """Write schema.json to the output directory."""
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = _utc_timestamp()
     schema = Schema(version=version, options=tuple(options))
     data = schema.to_dict()
     data["generated_at"] = now
@@ -157,7 +162,7 @@ def repr_field(name: str, val: Any) -> list[str]:
 
 def emit_python(options: Sequence[HyprOption], version: str, output_dir: Path) -> Path:
     """Write src/hyprland_schema/_data.py to the output directory."""
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = _utc_timestamp()
     source = SOURCE_URL_TEMPLATE.format(version=version)
 
     lines: list[str] = []
@@ -177,7 +182,7 @@ def emit_python(options: Sequence[HyprOption], version: str, output_dir: Path) -
         lines.append("    HyprOption(")
         for f in dataclass_fields(HyprOption):
             val = getattr(opt, f.name)
-            if f.name not in HyprOption._REQUIRED_FIELDS and val is None:
+            if f.name not in _REQUIRED_FIELDS and val is None:
                 continue
             if f.name == "description":
                 lines.extend(repr_field(f.name, val))
@@ -368,7 +373,7 @@ def _cmd_snapshot(version: str | None, output_dir: Path) -> None:
 def _cmd_bump(version: str, input_path: Path | None, output_dir: Path) -> None:
     """Handle --bump: version bump workflow."""
     old_version = current_data_version(output_dir)
-    if old_version and old_version == version:
+    if old_version == version:
         raise SchemaError(f"_data.py is already at {version}. Nothing to bump.")
 
     content = _fetch_or_read(input_path, version)

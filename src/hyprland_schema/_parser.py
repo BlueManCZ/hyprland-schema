@@ -79,16 +79,13 @@ def _parse_numeric_data(
     raw: str,
     parse_literal: Callable[[str], int | float],
     fallback: int | float,
-    value_re: re.Pattern[str],
-    min_re: re.Pattern[str],
-    max_re: re.Pattern[str],
 ) -> dict[str, Any]:
     """Shared parser for SRangeData (int) and SFloatData (float)."""
     raw = raw.strip()
     if ".value" in raw or ".min" in raw or ".max" in raw:
-        val_m = value_re.search(raw)
-        min_m = min_re.search(raw)
-        max_m = max_re.search(raw)
+        val_m = _NAMED_VALUE_RE.search(raw)
+        min_m = _NAMED_MIN_RE.search(raw)
+        max_m = _NAMED_MAX_RE.search(raw)
         return {
             "default": parse_literal(val_m.group(1) if val_m else "0"),
             "min": parse_literal(min_m.group(1) if min_m else "0"),
@@ -103,20 +100,11 @@ def _parse_numeric_data(
 
 
 def _parse_range_data(raw: str) -> dict[str, Any]:
-    return _parse_numeric_data(
-        raw, _parse_int_literal, 0, _NAMED_VALUE_RE, _NAMED_MIN_RE, _NAMED_MAX_RE
-    )
+    return _parse_numeric_data(raw, _parse_int_literal, 0)
 
 
 def _parse_float_data(raw: str) -> dict[str, Any]:
-    return _parse_numeric_data(
-        raw,
-        _parse_float_literal,
-        0.0,
-        _NAMED_VALUE_RE,
-        _NAMED_MIN_RE,
-        _NAMED_MAX_RE,
-    )
+    return _parse_numeric_data(raw, _parse_float_literal, 0.0)
 
 
 def _parse_string_data(raw: str) -> dict[str, Any]:

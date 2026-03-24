@@ -5,12 +5,14 @@ from types import MappingProxyType
 
 from hyprland_schema._data import HYPRLAND_VERSION as HYPRLAND_VERSION
 from hyprland_schema._data import OPTIONS as OPTIONS
+from hyprland_schema._migration import MigrationError as MigrationError
 from hyprland_schema._model import HyprOption as HyprOption
 from hyprland_schema._schema import Schema as Schema
 
 __all__ = [
     "HYPRLAND_VERSION",
     "HyprOption",
+    "MigrationError",
     "OPTIONS",
     "OPTIONS_BY_KEY",
     "Schema",
