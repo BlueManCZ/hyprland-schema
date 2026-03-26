@@ -12,7 +12,12 @@ from typing import Any
 from hyprland_schema._model import HyprOption
 
 # GitHub URL for fetching raw ConfigDescriptions.hpp content.
+# Moved from src/config/ to src/config/supplementary/ in hyprwm/Hyprland@8726a736.
 RAW_URL_TEMPLATE = (
+    "https://raw.githubusercontent.com/hyprwm/Hyprland/{version}"
+    "/src/config/supplementary/ConfigDescriptions.hpp"
+)
+_RAW_URL_TEMPLATE_LEGACY = (
     "https://raw.githubusercontent.com/hyprwm/Hyprland/{version}/src/config/ConfigDescriptions.hpp"
 )
 
@@ -224,10 +229,23 @@ def _parse_description(raw: str) -> str:
 
 
 def fetch_header(version: str) -> str:
-    """Fetch ConfigDescriptions.hpp content from GitHub for the given version tag."""
+    """Fetch ConfigDescriptions.hpp content from GitHub for the given version tag.
+
+    Tries the current path first, then falls back to the legacy path for
+    versions released before the config infrastructure refactor.
+    """
+    from urllib.error import HTTPError
     from urllib.request import urlopen
 
     url = RAW_URL_TEMPLATE.format(version=version)
+    try:
+        with urlopen(url, timeout=30) as resp:
+            return resp.read().decode("utf-8")
+    except HTTPError as exc:
+        if exc.code != 404:
+            raise
+    # Fall back to the pre-refactor path.
+    url = _RAW_URL_TEMPLATE_LEGACY.format(version=version)
     with urlopen(url, timeout=30) as resp:
         return resp.read().decode("utf-8")
 

@@ -23,23 +23,19 @@ __all__ = [
     "load",
 ]
 
+_LATEST_SCHEMA = Schema(version=HYPRLAND_VERSION, options=OPTIONS)
 
-@functools.cache
-def _get_latest_schema() -> Schema:
-    return Schema(version=HYPRLAND_VERSION, options=OPTIONS)
-
-
-OPTIONS_BY_KEY: MappingProxyType[str, HyprOption] = _get_latest_schema().options_by_key
+OPTIONS_BY_KEY: MappingProxyType[str, HyprOption] = _LATEST_SCHEMA.options_by_key
 
 
 def get_section(section: str) -> list[HyprOption]:
     """Return all options whose top-level section matches."""
-    return _get_latest_schema().get_section(section)
+    return _LATEST_SCHEMA.get_section(section)
 
 
 def get_subsection(section: str, subsection: str) -> list[HyprOption]:
     """Return all options in a nested subsection."""
-    return _get_latest_schema().get_subsection(section, subsection)
+    return _LATEST_SCHEMA.get_subsection(section, subsection)
 
 
 def get_json(*, indent: int | None = 2) -> str:
@@ -47,7 +43,7 @@ def get_json(*, indent: int | None = 2) -> str:
 
     Produces the same format as the schema.json that the generator emits.
     """
-    return _get_latest_schema().get_json(indent=indent)
+    return _LATEST_SCHEMA.get_json(indent=indent)
 
 
 @functools.lru_cache(maxsize=32)

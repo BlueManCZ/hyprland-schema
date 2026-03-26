@@ -2,7 +2,7 @@
 
 Typed Python schema for every Hyprland configuration option — with defaults,
 ranges, and descriptions. Generated from Hyprland's
-[ConfigDescriptions.hpp](https://github.com/hyprwm/Hyprland/blob/main/src/config/ConfigDescriptions.hpp).
+[ConfigDescriptions.hpp](https://github.com/hyprwm/Hyprland/blob/main/src/config/supplementary/ConfigDescriptions.hpp).
 Zero runtime dependencies — stdlib only.
 
 ## Installation
