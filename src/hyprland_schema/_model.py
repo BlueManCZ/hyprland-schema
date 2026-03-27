@@ -1,7 +1,6 @@
 """Hyprland configuration option model."""
 
-import dataclasses
-from dataclasses import dataclass, fields
+from dataclasses import MISSING, dataclass, fields
 from typing import Any, Self
 
 
@@ -46,7 +45,5 @@ class HyprOption:
 # Fields without defaults — always included in dict/JSON output.
 # Derived automatically so adding a required field can't drift out of sync.
 _REQUIRED_FIELDS: frozenset[str] = frozenset(
-    f.name
-    for f in fields(HyprOption)
-    if f.default is dataclasses.MISSING and f.default_factory is dataclasses.MISSING
+    f.name for f in fields(HyprOption) if f.default is MISSING and f.default_factory is MISSING
 )

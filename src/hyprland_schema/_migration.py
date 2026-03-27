@@ -54,6 +54,7 @@ def apply_migration(
                 raise MigrationError(f"add: option '{key}' already exists")
             result.append(option)
             by_key[key] = option
+            keys_to_remove.discard(key)
 
         elif op["op"] == "modify":
             key = op["key"]

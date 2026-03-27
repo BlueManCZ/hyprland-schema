@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "from_version": "v0.54.3",
+  "to_version": "v0.54.2",
+  "operations": [
+    {
+      "op": "modify",
+      "key": "dwindle:precise_mouse_move",
+      "fields": {
+        "description": [
+          "if enabled, bindm movewindow will drop the window more precisely depending on where your mouse is. This feature also turns on preserve_split.",
+          "if enabled, bindm movewindow will drop the window more precisely depending on where your mouse is."
+        ]
+      }
+    }
+  ]
+}

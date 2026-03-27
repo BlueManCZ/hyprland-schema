@@ -223,6 +223,24 @@ class TestApplyMigration:
         assert by_key["b"]["default"] is False
         assert by_key["d"]["default"] == 0.5
 
+    def test_remove_then_add_same_key(self) -> None:
+        """Removing then re-adding the same key should keep the re-added version."""
+        options = [
+            {"key": "a", "type": "int", "default": 1},
+            {"key": "b", "type": "bool", "default": True},
+        ]
+        migration = {
+            "format_version": 1,
+            "operations": [
+                {"op": "remove", "key": "b"},
+                {"op": "add", "option": {"key": "b", "type": "string", "default": "new"}},
+            ],
+        }
+        result = apply_migration(options, migration)
+        by_key = {o["key"]: o for o in result}
+        assert by_key["b"]["type"] == "string"
+        assert by_key["b"]["default"] == "new"
+
 
 # ---------------------------------------------------------------------------
 # compute_diff

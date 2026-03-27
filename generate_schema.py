@@ -10,7 +10,6 @@ No C++ compiler needed. Uses the parser from hyprland_schema._parser.
 
 import argparse
 import ast
-import functools
 import json
 import shutil
 import subprocess
@@ -18,6 +17,7 @@ import sys
 import warnings
 from collections.abc import Sequence
 from dataclasses import fields as dataclass_fields
+from functools import cache
 from pathlib import Path
 from time import gmtime, strftime
 from typing import Any
@@ -47,7 +47,7 @@ def _write_json(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
-@functools.cache
+@cache
 def _find_ruff() -> str | None:
     """Find the ruff binary, caching the result."""
     return shutil.which("ruff")
@@ -184,10 +184,7 @@ def emit_python(options: Sequence[HyprOption], version: str, output_dir: Path) -
             val = getattr(opt, f.name)
             if f.name not in _REQUIRED_FIELDS and val is None:
                 continue
-            if f.name == "description":
-                lines.extend(repr_field(f.name, val))
-            else:
-                lines.append(f"        {f.name}={repr_value(val)},")
+            lines.extend(repr_field(f.name, val))
         lines.append("    ),")
 
     lines.append(")")
