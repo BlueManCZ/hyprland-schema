@@ -163,7 +163,7 @@ def build_options(version: str) -> tuple[HyprOption, ...]:
     1. Latest version -> return _data.OPTIONS directly.
     2. Bundled version -> walk the reverse migration chain from the nearest snapshot.
     3. Disk cache at ~/.cache/hyprland-schema/ -> load from cache.
-    4. Download ConfigDescriptions.hpp from GitHub, parse, and cache.
+    4. Download the option-metadata source from GitHub, parse, and cache.
     """
     from hyprland_schema._data import HYPRLAND_VERSION, OPTIONS
     from hyprland_schema._migrations._registry import SNAPSHOTS, VERSIONS
@@ -269,7 +269,7 @@ def _save_disk_cache(version: str, options: Sequence[HyprOption]) -> None:
 
 
 def _fetch_and_parse(version: str) -> tuple[HyprOption, ...]:
-    """Download ConfigDescriptions.hpp from GitHub, parse it, and cache the result."""
+    """Download the option-metadata source from GitHub, parse it, and cache the result."""
     from urllib.error import HTTPError, URLError
 
     from hyprland_schema._parser import fetch_header, parse_header

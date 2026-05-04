@@ -54,7 +54,7 @@ def load(version: str) -> Schema:
     1. Latest bundled version — instant (pre-parsed).
     2. Older bundled version — reconstructed via reverse migrations.
     3. Disk cache at ~/.cache/hyprland-schema/ — no network needed.
-    4. Download from GitHub — fetches ConfigDescriptions.hpp and parses it.
+    4. Download from GitHub — fetches the option-metadata source and parses it.
 
     Results are cached in memory for repeated calls.
     """

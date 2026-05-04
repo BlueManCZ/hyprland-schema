@@ -1,8 +1,11 @@
 # hyprland-schema
 
 Typed Python schema for every Hyprland configuration option — with defaults,
-ranges, and descriptions. Generated from Hyprland's
-[ConfigDescriptions.hpp](https://github.com/hyprwm/Hyprland/blob/main/src/config/supplementary/ConfigDescriptions.hpp).
+ranges, and descriptions. Generated from Hyprland's option-metadata source
+([`ConfigDescriptions.hpp`](https://github.com/hyprwm/Hyprland/blob/v0.54.3/src/config/ConfigDescriptions.hpp)
+on v0.54.x and older,
+[`ConfigValues.cpp`](https://github.com/hyprwm/Hyprland/blob/main/src/config/values/ConfigValues.cpp)
+on `main` since [hyprwm/Hyprland#13817](https://github.com/hyprwm/Hyprland/pull/13817)).
 Zero runtime dependencies — stdlib only.
 
 ## Installation
@@ -65,7 +68,7 @@ Resolution order for `load()`:
 1. **Latest bundled version** — instant (pre-parsed).
 2. **Older bundled version** — reconstructed via reverse migrations.
 3. **Disk cache** at `~/.cache/hyprland-schema/` — no network needed.
-4. **GitHub fetch** — downloads `ConfigDescriptions.hpp` and parses it.
+4. **GitHub fetch** — downloads `ConfigValues.cpp` (or, for older tags, `ConfigDescriptions.hpp`) and parses it.
 
 ## API
 

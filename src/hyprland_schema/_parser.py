@@ -1,6 +1,14 @@
-"""Low-level parser for Hyprland ConfigDescriptions.hpp.
+"""Low-level parser for Hyprland config option metadata.
 
-Extracts structured option data from the C++ header using regex parsing.
+Supports two upstream formats:
+
+- **Legacy** (`src/config/ConfigDescriptions.hpp`, used through v0.54.x):
+  ``SConfigOptionDescription{.value=..., .type=..., .data=...}`` records.
+- **New** (`src/config/values/ConfigValues.cpp`, on `main` since hyprwm/Hyprland#13817):
+  ``MS<Type>("name", "description", default, {.min=..., .max=..., .map=...})`` calls.
+
+`parse_header` auto-detects the format from the content, and `fetch_header`
+tries the new-format URL first, falling back to the legacy URL for older tags.
 No C++ compiler needed. Pure stdlib.
 """
 
@@ -11,14 +19,14 @@ from typing import Any
 
 from hyprland_schema._model import HyprOption
 
-# GitHub URL for fetching raw ConfigDescriptions.hpp content.
-# Moved from src/config/ to src/config/supplementary/ in hyprwm/Hyprland@8726a736.
+# GitHub URL for fetching raw ConfigDescriptions.hpp content (legacy format,
+# used by every released version through v0.54.x).
 RAW_URL_TEMPLATE = (
-    "https://raw.githubusercontent.com/hyprwm/Hyprland/{version}"
-    "/src/config/supplementary/ConfigDescriptions.hpp"
-)
-_RAW_URL_TEMPLATE_LEGACY = (
     "https://raw.githubusercontent.com/hyprwm/Hyprland/{version}/src/config/ConfigDescriptions.hpp"
+)
+# New-format URL — single source of truth on `main` since hyprwm/Hyprland#13817.
+RAW_URL_TEMPLATE_NEW = (
+    "https://raw.githubusercontent.com/hyprwm/Hyprland/{version}/src/config/values/ConfigValues.cpp"
 )
 
 # ---------------------------------------------------------------------------
@@ -229,34 +237,54 @@ def _parse_description(raw: str) -> str:
 
 
 def fetch_header(version: str) -> str:
-    """Fetch ConfigDescriptions.hpp content from GitHub for the given version tag.
+    """Fetch the C++ option-metadata source from GitHub for the given version tag.
 
-    Tries the current path first, then falls back to the legacy path for
-    versions released before the config infrastructure refactor.
+    Tries the new-format URL (`src/config/values/ConfigValues.cpp`) first and
+    falls back to the legacy URL (`src/config/ConfigDescriptions.hpp`) on 404.
+    Returns the raw text; pass it to ``parse_header`` to extract options.
     """
     from urllib.error import HTTPError
     from urllib.request import urlopen
 
-    url = RAW_URL_TEMPLATE.format(version=version)
+    url = RAW_URL_TEMPLATE_NEW.format(version=version)
     try:
         with urlopen(url, timeout=30) as resp:
             return resp.read().decode("utf-8")
     except HTTPError as exc:
         if exc.code != 404:
             raise
-    # Fall back to the pre-refactor path.
-    url = _RAW_URL_TEMPLATE_LEGACY.format(version=version)
+    # Fall back to legacy path for older tags.
+    url = RAW_URL_TEMPLATE.format(version=version)
     with urlopen(url, timeout=30) as resp:
         return resp.read().decode("utf-8")
 
 
 # ---------------------------------------------------------------------------
-# Main parser
+# Main parser — dispatches to legacy or new format based on content
 # ---------------------------------------------------------------------------
 
 
 def parse_header(content: str) -> list[HyprOption]:
-    """Parse ConfigDescriptions.hpp content into a list of HyprOption."""
+    """Parse C++ option-metadata source into a list of HyprOption.
+
+    Auto-detects between the legacy `ConfigDescriptions.hpp` format and the
+    new `ConfigValues.cpp` format. Returns ``[]`` if neither marker is found
+    (e.g. empty content or unrelated source).
+    """
+    if "SConfigOptionDescription{" in content:
+        return _parse_legacy_format(content)
+    if _MS_OPEN_RE.search(content):
+        return _parse_new_format(content)
+    return []
+
+
+# ---------------------------------------------------------------------------
+# Legacy format parser (ConfigDescriptions.hpp, v0.54.x and older)
+# ---------------------------------------------------------------------------
+
+
+def _parse_legacy_format(content: str) -> list[HyprOption]:
+    """Parse the legacy ConfigDescriptions.hpp format."""
     options: list[HyprOption] = []
 
     blocks = content.split("SConfigOptionDescription{")
@@ -321,6 +349,319 @@ def parse_header(content: str) -> list[HyprOption]:
                 default_str=data.get("default_str"),
                 default_min=data.get("default_min"),
                 default_max=data.get("default_max"),
+            )
+        )
+
+    return options
+
+
+# ---------------------------------------------------------------------------
+# New format parser (ConfigValues.cpp, hyprwm/Hyprland#13817 and later)
+#
+# Each option is one MS<Type>("name", "description", default, {options}) call.
+# Types: Bool, Int, Float, String, Color, Gradient, Vec2, CssGap, FontWeight.
+# The options block is optional; FontWeight may also omit the default arg.
+# .map = OptionMap{{"name", value}, ...} promotes Int to "choice".
+# .min, .max, .map feed the schema; .validator and .refresh are ignored.
+# ---------------------------------------------------------------------------
+
+# Opens an MS<Type>(...) call. Anchored on word-boundary so we don't match
+# inside identifiers (e.g. someClassName::MS<Foo>).
+_MS_OPEN_RE = re.compile(r"\bMS<([A-Za-z0-9_]+)>\s*\(")
+
+# Match an OptionMap entry pair: { "name", value }.
+_OPTION_MAP_ENTRY_RE = re.compile(r'\{\s*"((?:[^"\\]|\\.)*)"\s*,\s*(-?\d+)\s*\}')
+
+# Find a hex color literal anywhere in an arg.
+_HEX_COLOR_VAL_RE = re.compile(r"0x([0-9a-fA-F]+)")
+
+# Body of Config::VEC2{...}.
+_VEC2_BODY_RE = re.compile(r"Config::VEC2\s*\{\s*([^}]*)\s*\}")
+
+# New-format type alias -> internal type name. "int" may be promoted to
+# "choice" later if a .map is present.
+_NEW_TYPE_MAP: dict[str, str] = {
+    "Bool": "bool",
+    "Int": "int",
+    "Float": "float",
+    "String": "string",
+    "Color": "color",
+    "Gradient": "gradient",
+    "Vec2": "vec2",
+    "CssGap": "cssgap",
+    "FontWeight": "font_weight",
+}
+
+
+def _split_top_level_commas(s: str) -> list[str]:
+    """Split a comma-separated argument list at depth 0, respecting strings."""
+    args: list[str] = []
+    depth = 0
+    in_str = False
+    escape = False
+    start = 0
+    for i, ch in enumerate(s):
+        if escape:
+            escape = False
+            continue
+        if in_str:
+            if ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_str = False
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch in "([{<":
+            depth += 1
+        elif ch in ")]}>":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            args.append(s[start:i])
+            start = i + 1
+    tail = s[start:]
+    if tail.strip():
+        args.append(tail)
+    return [a.strip() for a in args]
+
+
+def _find_matching(s: str, start: int, open_ch: str, close_ch: str) -> int:
+    """Return the index of the close character matching ``s[start]``.
+
+    Respects nested ``open_ch``/``close_ch`` pairs and skips characters inside
+    double-quoted strings (so a paren inside a description doesn't confuse us).
+    """
+    depth = 1
+    in_str = False
+    escape = False
+    i = start + 1
+    while i < len(s):
+        ch = s[i]
+        if escape:
+            escape = False
+        elif in_str:
+            if ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_str = False
+        elif ch == '"':
+            in_str = True
+        elif ch == open_ch:
+            depth += 1
+        elif ch == close_ch:
+            depth -= 1
+            if depth == 0:
+                return i
+        i += 1
+    return -1
+
+
+def _parse_new_int_literal(s: str) -> int:
+    """Parse an integer literal, handling INT_MAX / numeric_limits / hex / signed."""
+    s = s.strip()
+    if s.startswith("-") and ("INT_MAX" in s or "numeric_limits" in s):
+        return -2147483648
+    if "INT_MAX" in s or "numeric_limits" in s:
+        return 2147483647
+    if s.lower().startswith("0x") or s.lower().startswith("-0x"):
+        return int(s, 16)
+    return int(s)
+
+
+def _parse_new_float_literal(s: str) -> float:
+    s = s.strip().rstrip("fF")
+    return float(s)
+
+
+def _parse_new_default(arg: str, type_name: str) -> Any:
+    """Parse the third positional arg (default value) by type."""
+    arg = arg.strip()
+
+    if type_name == "bool":
+        return arg.lower() == "true"
+
+    if type_name in ("int", "cssgap", "font_weight"):
+        try:
+            return _parse_new_int_literal(arg)
+        except ValueError:
+            return 0
+
+    if type_name == "float":
+        try:
+            return _parse_new_float_literal(arg)
+        except ValueError:
+            return 0.0
+
+    if type_name == "string":
+        if "STRVAL_EMPTY" in arg:
+            return ""
+        m = _QUOTED_STR_RE.search(arg)
+        if not m:
+            return ""
+        # Concatenate adjacent literals (C++ joins them at compile time).
+        parts = _QUOTED_STR_RE.findall(arg)
+        text = "".join(parts).replace("\\n", "\n").replace("\\t", "\t")
+        return text
+
+    if type_name == "color":
+        m = _HEX_COLOR_VAL_RE.search(arg)
+        if m:
+            val = int(m.group(1), 16)
+            return f"0x{val:08x}"
+        # Negative sentinel (e.g. -1 means "fall back to another color").
+        try:
+            return _parse_new_int_literal(arg)
+        except ValueError:
+            return None
+
+    if type_name == "gradient":
+        m = _HEX_COLOR_VAL_RE.search(arg)
+        if m:
+            val = int(m.group(1), 16)
+            return f"0x{val:08x}"
+        return ""
+
+    if type_name == "vec2":
+        m = _VEC2_BODY_RE.search(arg)
+        if not m:
+            return (0.0, 0.0)
+        body = m.group(1).strip()
+        if not body:
+            return (0.0, 0.0)
+        try:
+            parts = [_parse_new_float_literal(p) for p in body.split(",") if p.strip()]
+        except ValueError:
+            return (0.0, 0.0)
+        if len(parts) == 2:
+            return (parts[0], parts[1])
+        return (0.0, 0.0)
+
+    return None
+
+
+def _parse_new_options_block(block: str) -> dict[str, Any]:
+    """Extract .min, .max, .map from the options-struct designator block."""
+    out: dict[str, Any] = {}
+
+    # .min / .max — value runs until the next top-level comma or end-of-block.
+    # Use a permissive pattern: capture everything up to the next ".\w" or end.
+    for field in ("min", "max"):
+        m = re.search(rf"\.{field}\s*=\s*([^,}}]+(?:\([^)]*\))?[^,}}]*)", block)
+        if m:
+            raw = m.group(1).strip()
+            # Try int first, then float.
+            try:
+                out[field] = _parse_new_int_literal(raw)
+            except ValueError:
+                try:
+                    out[field] = _parse_new_float_literal(raw)
+                except ValueError:
+                    pass
+
+    # .map = OptionMap{{"name", value}, ...}
+    map_idx = block.find(".map")
+    if map_idx >= 0:
+        # Find the OptionMap opening brace and balance to extract its body.
+        om_open = block.find("{", block.find("OptionMap", map_idx))
+        if om_open >= 0:
+            om_close = _find_matching(block, om_open, "{", "}")
+            if om_close > 0:
+                pairs = _OPTION_MAP_ENTRY_RE.findall(block[om_open:om_close])
+                # Sort by int value (all maps in upstream are 0..N consecutive,
+                # but sort defensively in case a non-sequential one is added).
+                ordered = sorted(((int(v), n) for n, v in pairs), key=lambda x: x[0])
+                names = tuple(n for _, n in ordered)
+                values = tuple(v for v, _ in ordered)
+                out["map_names"] = names
+                out["map_values"] = values
+
+    return out
+
+
+def _parse_new_format(content: str) -> list[HyprOption]:
+    """Parse ConfigValues.cpp into a list of HyprOption."""
+    options: list[HyprOption] = []
+
+    for m in _MS_OPEN_RE.finditer(content):
+        type_alias = m.group(1)
+        if type_alias not in _NEW_TYPE_MAP:
+            # Unknown template type — skip silently; future Hyprland may add types.
+            continue
+
+        # Find the matching ')' for the MS<...>( opener.
+        open_paren = m.end() - 1
+        close_paren = _find_matching(content, open_paren, "(", ")")
+        if close_paren < 0:
+            warnings.warn(f"unbalanced MS<{type_alias}>(...) at offset {m.start()}", stacklevel=2)
+            continue
+
+        body = content[open_paren + 1 : close_paren]
+        args = _split_top_level_commas(body)
+        if len(args) < 2:
+            continue  # need at least name + description
+
+        # Arg 0: name (quoted string)
+        name_m = _QUOTED_STR_RE.search(args[0])
+        if not name_m:
+            continue
+        key = name_m.group(1)
+
+        # Arg 1: description (one or more quoted strings, possibly multi-line)
+        description = _parse_description(args[1])
+
+        # Arg 2: default value (optional for FontWeight)
+        type_name = _NEW_TYPE_MAP[type_alias]
+        default: Any = None
+        if len(args) >= 3:
+            default = _parse_new_default(args[2], type_name)
+        elif type_name == "font_weight":
+            # No default arg — leave as None (matches the C++ default-constructed value).
+            default = None
+        else:
+            warnings.warn(f"missing default for '{key}', skipping", stacklevel=2)
+            continue
+
+        # Arg 3 (optional): {.min=…, .max=…, .map=…, .validator=…, .refresh=…}
+        opts: dict[str, Any] = {}
+        if len(args) >= 4:
+            opts_arg = args[3].strip()
+            if opts_arg.startswith("{") and opts_arg.endswith("}"):
+                opts = _parse_new_options_block(opts_arg[1:-1])
+
+        # Promote Int -> choice when an OptionMap is present.
+        opt_min = opts.get("min")
+        opt_max = opts.get("max")
+        enum_values: tuple[str, ...] | None = None
+        default_str: str | None = None
+
+        if "map_names" in opts and type_name == "int":
+            type_name = "choice"
+            map_names: tuple[str, ...] = opts["map_names"]
+            map_values: tuple[int, ...] = opts["map_values"]
+            enum_values = map_names
+            # default is the raw int; resolve its name via the value map.
+            if isinstance(default, int) and default in map_values:
+                default_str = map_names[map_values.index(default)]
+            # Drop min/max for choice — legacy schema doesn't carry them.
+            opt_min = None
+            opt_max = None
+
+        key_parts = key.split(":")
+        section = tuple(key_parts[:-1])
+        opt_name = key_parts[-1]
+
+        options.append(
+            HyprOption(
+                key=key,
+                section=section,
+                name=opt_name,
+                description=description,
+                type=type_name,
+                default=default,
+                min=opt_min,
+                max=opt_max,
+                enum_values=enum_values,
+                default_str=default_str,
             )
         )
 

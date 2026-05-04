@@ -8,10 +8,8 @@ from typing import Any
 from hyprland_schema._model import HyprOption
 
 # GitHub URL for human-readable links to ConfigDescriptions.hpp.
-# Moved from src/config/ to src/config/supplementary/ in hyprwm/Hyprland@8726a736.
 SOURCE_URL_TEMPLATE = (
-    "https://github.com/hyprwm/Hyprland/blob/{version}"
-    "/src/config/supplementary/ConfigDescriptions.hpp"
+    "https://github.com/hyprwm/Hyprland/blob/{version}/src/config/ConfigDescriptions.hpp"
 )
 
 

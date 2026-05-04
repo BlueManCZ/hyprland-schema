@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Generate Hyprland option schema from ConfigDescriptions.hpp.
+"""Generate Hyprland option schema from upstream C++ option metadata.
 
-Parses the C++ header and emits:
+Parses Hyprland's ``ConfigDescriptions.hpp`` (legacy, v0.54.x and older) or
+``ConfigValues.cpp`` (new format on ``main`` since hyprwm/Hyprland#13817) and
+emits:
+
   - schema.json                      — machine-readable option schema
   - src/hyprland_schema/_data.py     — importable Python module with baked-in data
 
@@ -458,7 +461,10 @@ def _cmd_generate(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate Hyprland option schema from ConfigDescriptions.hpp"
+        description=(
+            "Generate Hyprland option schema from ConfigDescriptions.hpp (legacy) "
+            "or ConfigValues.cpp (new format)"
+        )
     )
     parser.add_argument(
         "--output-dir",
@@ -484,7 +490,7 @@ def main() -> None:
     gen_parser.add_argument(
         "--input",
         type=Path,
-        help="Use a local ConfigDescriptions.hpp instead of fetching",
+        help="Use a local ConfigDescriptions.hpp or ConfigValues.cpp instead of fetching",
     )
     gen_parser.add_argument(
         "--json",
@@ -514,7 +520,7 @@ def main() -> None:
     bump_parser.add_argument(
         "--input",
         type=Path,
-        help="Use a local ConfigDescriptions.hpp instead of fetching",
+        help="Use a local ConfigDescriptions.hpp or ConfigValues.cpp instead of fetching",
     )
 
     # --- snapshot ---
