@@ -13,6 +13,7 @@ from generate_schema import (
     emit_json,
     emit_python,
     is_up_to_date,
+    prune_redundant_migrations,
     repr_field,
     repr_value,
     resolve_version,
@@ -225,6 +226,52 @@ class TestChainOpsCount:
 
     def test_empty_chain(self, tmp_path: Path) -> None:
         assert chain_ops_count(tmp_path, ["v1"], set()) == 0
+
+
+# ---------------------------------------------------------------------------
+# prune_redundant_migrations
+# ---------------------------------------------------------------------------
+
+
+class TestPruneRedundantMigrations:
+    def _mkmig(self, mig_dir: Path, from_ver: str, to_ver: str) -> Path:
+        path = mig_dir / f"{from_ver}_to_{to_ver}.json"
+        path.write_text(json.dumps({"operations": []}))
+        return path
+
+    def test_deletes_when_to_version_is_snapshot(self, tmp_path: Path) -> None:
+        mig_dir = tmp_path / "src" / "hyprland_schema" / "_migrations"
+        mig_dir.mkdir(parents=True)
+        target = self._mkmig(mig_dir, "v3", "v2")
+        keep = self._mkmig(mig_dir, "v2", "v1")
+
+        pruned = prune_redundant_migrations(tmp_path, {"v3", "v2"})
+
+        assert pruned == [target]
+        assert not target.exists()
+        assert keep.exists()
+
+    def test_keeps_when_to_version_not_snapshot(self, tmp_path: Path) -> None:
+        mig_dir = tmp_path / "src" / "hyprland_schema" / "_migrations"
+        mig_dir.mkdir(parents=True)
+        keep = self._mkmig(mig_dir, "v2", "v1")
+
+        assert prune_redundant_migrations(tmp_path, {"v3"}) == []
+        assert keep.exists()
+
+    def test_ignores_snapshot_files(self, tmp_path: Path) -> None:
+        mig_dir = tmp_path / "src" / "hyprland_schema" / "_migrations"
+        mig_dir.mkdir(parents=True)
+        snap = mig_dir / "v2_snapshot.json"
+        snap.write_text(json.dumps({"options": []}))
+
+        assert prune_redundant_migrations(tmp_path, {"v2"}) == []
+        assert snap.exists()
+
+    def test_empty_dir(self, tmp_path: Path) -> None:
+        mig_dir = tmp_path / "src" / "hyprland_schema" / "_migrations"
+        mig_dir.mkdir(parents=True)
+        assert prune_redundant_migrations(tmp_path, set()) == []
 
 
 # ---------------------------------------------------------------------------

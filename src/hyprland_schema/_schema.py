@@ -7,10 +7,30 @@ from typing import Any
 
 from hyprland_schema._model import HyprOption
 
-# GitHub URL for human-readable links to ConfigDescriptions.hpp.
-SOURCE_URL_TEMPLATE = (
+# Upstream renamed/relocated the option-metadata file in hyprwm/Hyprland#13817
+# (landed for v0.55.0). Earlier tags carry the legacy header, later tags carry
+# the new .cpp file. Pick the right one based on the version tag.
+_NEW_FORMAT_MIN_VERSION = (0, 55, 0)
+_LEGACY_SOURCE_URL = (
     "https://github.com/hyprwm/Hyprland/blob/{version}/src/config/ConfigDescriptions.hpp"
 )
+_NEW_SOURCE_URL = (
+    "https://github.com/hyprwm/Hyprland/blob/{version}/src/config/values/ConfigValues.cpp"
+)
+
+
+def _version_tuple(v: str) -> tuple[int, ...]:
+    return tuple(int(x) for x in v.lstrip("v").split("."))
+
+
+def source_url(version: str) -> str:
+    """Return the canonical upstream source URL for a Hyprland version tag."""
+    template = (
+        _NEW_SOURCE_URL
+        if _version_tuple(version) >= _NEW_FORMAT_MIN_VERSION
+        else _LEGACY_SOURCE_URL
+    )
+    return template.format(version=version)
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,7 +59,7 @@ class Schema:
         return {
             "hyprland_version": self.version,
             "generator": "hyprland-schema",
-            "source": SOURCE_URL_TEMPLATE.format(version=self.version),
+            "source": source_url(self.version),
             "options": [o.to_dict() for o in self.options],
         }
 

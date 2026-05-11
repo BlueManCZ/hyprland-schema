@@ -277,7 +277,7 @@ def _fetch_and_parse(version: str) -> tuple[HyprOption, ...]:
     logger.info("Fetching %s from GitHub", version)
 
     try:
-        content = fetch_header(version)
+        content, _ = fetch_header(version)
     except HTTPError as e:
         raise MigrationError(
             f"Failed to fetch version {version!r}: HTTP {e.code}. "

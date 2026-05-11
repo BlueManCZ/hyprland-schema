@@ -4,8 +4,8 @@ Typed Python schema for every Hyprland configuration option — with defaults,
 ranges, and descriptions. Generated from Hyprland's option-metadata source
 ([`ConfigDescriptions.hpp`](https://github.com/hyprwm/Hyprland/blob/v0.54.3/src/config/ConfigDescriptions.hpp)
 on v0.54.x and older,
-[`ConfigValues.cpp`](https://github.com/hyprwm/Hyprland/blob/main/src/config/values/ConfigValues.cpp)
-on `main` since [hyprwm/Hyprland#13817](https://github.com/hyprwm/Hyprland/pull/13817)).
+[`ConfigValues.cpp`](https://github.com/hyprwm/Hyprland/blob/v0.55.0/src/config/values/ConfigValues.cpp)
+on v0.55.0 and newer, [hyprwm/Hyprland#13817](https://github.com/hyprwm/Hyprland/pull/13817)).
 Zero runtime dependencies — stdlib only.
 
 ## Installation
@@ -20,7 +20,7 @@ pip install hyprland-schema
 import hyprland_schema
 
 # Schema version
-print(hyprland_schema.HYPRLAND_VERSION)  # "v0.54.3"
+print(hyprland_schema.HYPRLAND_VERSION)  # "v0.55.0"
 
 # Lookup by key
 border = hyprland_schema.OPTIONS_BY_KEY["general:border_size"]
@@ -106,7 +106,7 @@ specific Hyprland version.
 | `section`     | `tuple[str, ...]`           | `("general",)`                                                          |
 | `name`        | `str`                       | `"border_size"`                                                         |
 | `description` | `str`                       | Human-readable text                                                     |
-| `type`        | `str`                       | `bool`, `int`, `float`, `string`, `color`, `gradient`, `vec2`, `choice` |
+| `type`        | `str`                       | `bool`, `int`, `float`, `string`, `color`, `gradient`, `vec2`, `choice`, `cssgap`, `font_weight` |
 | `default`     | `Any`                       | Default value                                                           |
 | `min`         | `int \| float \| None`      | For `int`/`float` types                                                 |
 | `max`         | `int \| float \| None`      | For `int`/`float` types                                                 |

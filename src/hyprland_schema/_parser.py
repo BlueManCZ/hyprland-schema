@@ -236,12 +236,14 @@ def _parse_description(raw: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def fetch_header(version: str) -> str:
+def fetch_header(version: str) -> tuple[str, str]:
     """Fetch the C++ option-metadata source from GitHub for the given version tag.
 
     Tries the new-format URL (`src/config/values/ConfigValues.cpp`) first and
     falls back to the legacy URL (`src/config/ConfigDescriptions.hpp`) on 404.
-    Returns the raw text; pass it to ``parse_header`` to extract options.
+    Returns ``(content, url)`` so callers can report or store the URL that
+    actually served the response. Pass ``content`` to ``parse_header`` to
+    extract options.
     """
     from urllib.error import HTTPError
     from urllib.request import urlopen
@@ -249,14 +251,13 @@ def fetch_header(version: str) -> str:
     url = RAW_URL_TEMPLATE_NEW.format(version=version)
     try:
         with urlopen(url, timeout=30) as resp:
-            return resp.read().decode("utf-8")
+            return resp.read().decode("utf-8"), url
     except HTTPError as exc:
         if exc.code != 404:
             raise
-    # Fall back to legacy path for older tags.
     url = RAW_URL_TEMPLATE.format(version=version)
     with urlopen(url, timeout=30) as resp:
-        return resp.read().decode("utf-8")
+        return resp.read().decode("utf-8"), url
 
 
 # ---------------------------------------------------------------------------
@@ -377,6 +378,11 @@ _HEX_COLOR_VAL_RE = re.compile(r"0x([0-9a-fA-F]+)")
 
 # Body of Config::VEC2{...}.
 _VEC2_BODY_RE = re.compile(r"Config::VEC2\s*\{\s*([^}]*)\s*\}")
+
+# Upstream uses bracketed sentinel strings like "[[EMPTY]]" or "[[Auto]]" as
+# string defaults that Hyprland resolves at runtime (empty / auto-pick).
+# The legacy header used STRVAL_EMPTY for the same purpose; surface both as "".
+_BRACKET_SENTINEL_RE = re.compile(r"^\[\[[A-Za-z]+\]\]$")
 
 # New-format type alias -> internal type name. "int" may be promoted to
 # "choice" later if a .map is present.
@@ -501,6 +507,8 @@ def _parse_new_default(arg: str, type_name: str) -> Any:
         # Concatenate adjacent literals (C++ joins them at compile time).
         parts = _QUOTED_STR_RE.findall(arg)
         text = "".join(parts).replace("\\n", "\n").replace("\\t", "\t")
+        if _BRACKET_SENTINEL_RE.match(text):
+            return ""
         return text
 
     if type_name == "color":

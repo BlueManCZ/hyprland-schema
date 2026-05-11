@@ -92,7 +92,18 @@ class TestAllOptions:
             assert opt.type
 
     def test_types_are_known(self) -> None:
-        known = {"bool", "int", "float", "string", "color", "gradient", "vec2", "choice"}
+        known = {
+            "bool",
+            "int",
+            "float",
+            "string",
+            "color",
+            "gradient",
+            "vec2",
+            "choice",
+            "cssgap",
+            "font_weight",
+        }
         for opt in OPTIONS:
             assert opt.type in known, f"{opt.key}: unknown type {opt.type}"
 

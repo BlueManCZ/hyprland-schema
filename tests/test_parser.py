@@ -206,6 +206,7 @@ std::vector<SP<IValue>> Values::getConfigValues() {
         MS<String>("misc:swallow_regex", "The class regex.", STRVAL_EMPTY),
         MS<String>("group:groupbar:font_family",
                    "font used to display groupbar titles", "[[EMPTY]]"),
+        MS<String>("input:touchdevice:output", "The monitor to bind touch devices.", "[[Auto]]"),
         MS<Color>("decoration:shadow:color", "shadow's color.", 0xee1a1a1a),
         MS<Color>("group:groupbar:text_color_inactive", "fall-back-to-default sentinel.", -1),
         MS<Gradient>("general:col.inactive_border", "border color for inactive windows",
@@ -247,8 +248,8 @@ class TestParseNewFormat:
         assert all(isinstance(o, HyprOption) for o in self._options)
 
     def test_option_count(self) -> None:
-        # 18 entries in the sample.
-        assert len(self._options) == 18
+        # 19 entries in the sample.
+        assert len(self._options) == 19
 
     def test_int_option(self) -> None:
         opt = self._by_key["general:border_size"]
@@ -288,11 +289,14 @@ class TestParseNewFormat:
         assert opt.type == "string"
         assert opt.default == ""
 
-    def test_string_literal_sentinel_preserved(self) -> None:
-        # "[[EMPTY]]" is meaningful to Hyprland — keep it verbatim, do not collapse.
-        opt = self._by_key["group:groupbar:font_family"]
-        assert opt.type == "string"
-        assert opt.default == "[[EMPTY]]"
+    def test_string_bracket_sentinel_collapses_to_empty(self) -> None:
+        # Upstream uses bracketed sentinels like "[[EMPTY]]" and "[[Auto]]"
+        # for string defaults Hyprland resolves at runtime; collapse them
+        # to "" so consumers (e.g. GUIs) don't render the sentinel as text.
+        for key in ("group:groupbar:font_family", "input:touchdevice:output"):
+            opt = self._by_key[key]
+            assert opt.type == "string"
+            assert opt.default == ""
 
     def test_color_option(self) -> None:
         opt = self._by_key["decoration:shadow:color"]
