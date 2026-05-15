@@ -58,6 +58,94 @@ class TestHyprOption:
                 )
 
 
+class TestValidate:
+    def test_valid_int_in_range(self) -> None:
+        opt = HyprOption(
+            key="k", section=(), name="k", description="", type="int", default=1, min=0, max=10
+        )
+        assert opt.validate(5) is None
+
+    def test_below_min(self) -> None:
+        opt = HyprOption(
+            key="k", section=(), name="k", description="", type="int", default=1, min=0, max=10
+        )
+        assert opt.validate(-1) is not None
+
+    def test_above_max(self) -> None:
+        opt = HyprOption(
+            key="k", section=(), name="k", description="", type="int", default=1, min=0, max=10
+        )
+        assert opt.validate(11) is not None
+
+    def test_at_boundaries(self) -> None:
+        opt = HyprOption(
+            key="k", section=(), name="k", description="", type="int", default=1, min=0, max=10
+        )
+        assert opt.validate(0) is None
+        assert opt.validate(10) is None
+
+    def test_float_range(self) -> None:
+        opt = HyprOption(
+            key="k",
+            section=(),
+            name="k",
+            description="",
+            type="float",
+            default=0.5,
+            min=0.0,
+            max=1.0,
+        )
+        assert opt.validate(0.5) is None
+        assert opt.validate(1.5) is not None
+
+    def test_no_constraints_passes(self) -> None:
+        opt = HyprOption(key="k", section=(), name="k", description="", type="int", default=1)
+        assert opt.validate(9999) is None
+
+    def test_enum_valid(self) -> None:
+        opt = HyprOption(
+            key="k",
+            section=(),
+            name="k",
+            description="",
+            type="string",
+            default="a",
+            enum_values=("a", "b", "c"),
+        )
+        assert opt.validate("a") is None
+
+    def test_enum_invalid(self) -> None:
+        opt = HyprOption(
+            key="k",
+            section=(),
+            name="k",
+            description="",
+            type="string",
+            default="a",
+            enum_values=("a", "b", "c"),
+        )
+        assert opt.validate("z") is not None
+
+    def test_non_numeric_for_int_type(self) -> None:
+        opt = HyprOption(
+            key="k", section=(), name="k", description="", type="int", default=0, min=0, max=10
+        )
+        assert opt.validate("notanumber") is not None
+
+    def test_string_type_skips_numeric_check(self) -> None:
+        opt = HyprOption(
+            key="k", section=(), name="k", description="", type="string", default="hello"
+        )
+        assert opt.validate("anything") is None
+
+    def test_choice_validated(self) -> None:
+        opt = HyprOption(
+            key="k", section=(), name="k", description="", type="choice", default=0, min=0, max=2
+        )
+        assert opt.validate(1) is None
+        assert opt.validate(5) is not None
+
+
 class TestGetSection:
     def test_general(self) -> None:
         opts = get_section("general")

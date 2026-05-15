@@ -41,6 +41,29 @@ class HyprOption:
             kwargs[f.name] = tuple(val) if isinstance(val, list) else val
         return cls(**kwargs)
 
+    def validate(self, value: Any) -> str | None:
+        """Check *value* against the option's schema constraints.
+
+        Returns an error message string if validation fails, or ``None`` if
+        the value is acceptable. Numeric types are bounds-checked against
+        ``min``/``max``; ``enum_values``, when present, restrict the
+        stringified value to the listed choices.
+        """
+        if self.type in ("int", "float", "choice"):
+            try:
+                numeric = float(value)
+            except (TypeError, ValueError):
+                return f"expected a numeric value for {self.key!r}, got {value!r}"
+            if self.min is not None and numeric < self.min:
+                return f"value {value} for {self.key!r} is below minimum {self.min}"
+            if self.max is not None and numeric > self.max:
+                return f"value {value} for {self.key!r} is above maximum {self.max}"
+
+        if self.enum_values is not None and str(value) not in self.enum_values:
+            return f"value {value!r} for {self.key!r} is not one of {self.enum_values}"
+
+        return None
+
 
 # Fields without defaults — always included in dict/JSON output.
 # Derived automatically so adding a required field can't drift out of sync.
