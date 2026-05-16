@@ -1,0 +1,21 @@
+{
+  "format_version": 1,
+  "from_version": "v0.55.2",
+  "to_version": "v0.55.1",
+  "operations": [
+    {
+      "op": "modify",
+      "key": "cursor:no_hardware_cursors",
+      "fields": {
+        "default_str": [
+          "Auto",
+          "Disabled"
+        ],
+        "default": [
+          2,
+          0
+        ]
+      }
+    }
+  ]
+}

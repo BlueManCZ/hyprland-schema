@@ -5,6 +5,12 @@ All notable changes to hyprland-schema will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-05-16
+
+### Changed
+
+- **Hyprland v0.55.2 schema** — `cursor:no_hardware_cursors` default flipped from `Disabled` (0) to `Auto` (2), letting Hyprland decide per-GPU whether to use hardware cursors
+
 ## [0.6.0] - 2026-05-15
 
 ### Added
@@ -71,6 +77,7 @@ Initial release — typed Python schema for every Hyprland configuration option.
 - **Generated from upstream `ConfigDescriptions.hpp`** — no C++ compiler needed; stdlib-only at runtime
 - **CLI** — `generate_schema.py` with `generate`, `bump`, `snapshot`, and `update-registry` subcommands
 
+[0.6.1]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.6.1
 [0.6.0]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.6.0
 [0.5.0]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.5.0
 [0.4.0]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.4.0

@@ -1,6 +1,6 @@
 [project]
 name = "hyprland-schema"
-version = "0.6.0"
+version = "0.6.1"
 description = "Typed Python schema for every Hyprland configuration option"
 requires-python = ">=3.12"
 license = "MIT"
@@ -22,7 +22,7 @@ classifiers = [
 Repository = "https://github.com/BlueManCZ/hyprland-schema"
 
 [dependency-groups]
-dev = ["pyright>=1.1", "pytest>=9.0", "ruff>=0.15"]
+dev = ["pyright>=1.1", "pytest>=9.0.3", "ruff>=0.15"]
 
 [build-system]
 requires = ["hatchling"]
