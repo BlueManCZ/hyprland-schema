@@ -1,6 +1,6 @@
 [project]
 name = "hyprland-schema"
-version = "0.6.2"
+version = "0.6.3"
 description = "Typed Python schema for every Hyprland configuration option"
 requires-python = ">=3.12"
 license = "MIT"
