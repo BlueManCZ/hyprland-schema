@@ -20,7 +20,7 @@ pip install hyprland-schema
 import hyprland_schema
 
 # Schema version
-print(hyprland_schema.HYPRLAND_VERSION)  # "v0.55.0"
+print(hyprland_schema.HYPRLAND_VERSION)  # "v0.56.1"
 
 # Lookup by key
 border = hyprland_schema.OPTIONS_BY_KEY["general:border_size"]

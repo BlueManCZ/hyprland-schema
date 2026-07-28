@@ -196,10 +196,13 @@ class TestAllOptions:
             assert opt.type in known, f"{opt.key}: unknown type {opt.type}"
 
     def test_int_options_have_range(self) -> None:
+        # Upstream may leave an int open-ended (e.g. `input:tablettool:eraser_button_override`
+        # declares only `.min`), so only the lower bound is guaranteed.
         for opt in OPTIONS:
             if opt.type == "int":
                 assert opt.min is not None, f"{opt.key}: int without min"
-                assert opt.max is not None, f"{opt.key}: int without max"
+                if opt.max is not None:
+                    assert opt.max >= opt.min, f"{opt.key}: max {opt.max} below min {opt.min}"
 
     def test_choice_options_have_enum(self) -> None:
         for opt in OPTIONS:

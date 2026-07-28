@@ -1,0 +1,123 @@
+{
+  "format_version": 1,
+  "from_version": "v0.56.0",
+  "to_version": "v0.55.4",
+  "operations": [
+    {
+      "op": "modify",
+      "key": "general:layout",
+      "fields": {
+        "description": [
+          "which layout to use. [dwindle/master/scrolling/monocle/lua:<name>]",
+          "which layout to use. [dwindle/master]"
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "decoration:shadow:color",
+      "fields": {
+        "type": [
+          "gradient",
+          "color"
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "decoration:shadow:color_inactive",
+      "fields": {
+        "type": [
+          "gradient",
+          "color"
+        ],
+        "default": [
+          "",
+          -1
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "decoration:glow:color",
+      "fields": {
+        "type": [
+          "gradient",
+          "color"
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "decoration:glow:color_inactive",
+      "fields": {
+        "type": [
+          "gradient",
+          "color"
+        ],
+        "default": [
+          "",
+          "0x0033ccff"
+        ]
+      }
+    },
+    {
+      "op": "remove",
+      "key": "decoration:motion_blur:enabled"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:motion_blur:samples"
+    },
+    {
+      "op": "remove",
+      "key": "input:tablettool:eraser_button_mode"
+    },
+    {
+      "op": "remove",
+      "key": "input:tablettool:eraser_button_override"
+    },
+    {
+      "op": "remove",
+      "key": "input:tablettool:pressure_range_min"
+    },
+    {
+      "op": "remove",
+      "key": "input:tablettool:pressure_range_max"
+    },
+    {
+      "op": "remove",
+      "key": "group:groupbar:disable_when_only"
+    },
+    {
+      "op": "remove",
+      "key": "misc:session_lock_blur"
+    },
+    {
+      "op": "remove",
+      "key": "misc:initial_workspace_token_timeout"
+    },
+    {
+      "op": "remove",
+      "key": "master:focus_master_on_close"
+    },
+    {
+      "op": "modify",
+      "key": "experimental:wp_cm_1_2",
+      "fields": {
+        "default": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "op": "remove",
+      "key": "input-capture:capture_modifiers"
+    },
+    {
+      "op": "remove",
+      "key": "input-capture:enforce_barriers"
+    }
+  ]
+}

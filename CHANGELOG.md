@@ -5,6 +5,20 @@ All notable changes to hyprland-schema will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-07-28
+
+### Added
+
+- **Hyprland v0.56.1 schema** — patch release with no upstream option changes; the `v0.56.1 → v0.56.0` migration is a no-op
+- **Hyprland v0.56.0 schema** — 353 options across 21 sections; new `input-capture` section (`capture_modifiers`, `enforce_barriers`), motion blur (`decoration:motion_blur:*`), tablet tool eraser and pressure range controls (`input:tablettool:*`), `group:groupbar:disable_when_only`, `misc:session_lock_blur`, `misc:initial_workspace_token_timeout`, and `master:focus_master_on_close`
+
+### Changed
+
+- **Shadow and glow colors are now gradients** — `decoration:shadow:color`, `decoration:shadow:color_inactive`, `decoration:glow:color`, and `decoration:glow:color_inactive` changed type from `color` to `gradient` upstream, and the two `color_inactive` options now default to empty
+- **`experimental:wp_cm_1_2`** default flipped from `false` to `true`
+- **`general:layout`** accepts `scrolling`, `monocle`, and `lua:<name>` in addition to `dwindle` and `master`
+- **Int options may be open-ended** — upstream can declare an int with only a lower bound (`input:tablettool:eraser_button_override`), so `max` is no longer guaranteed to be set; `validate()` already treated a missing bound as unbounded
+
 ## [0.6.3] - 2026-06-12
 
 ### Changed
@@ -89,6 +103,7 @@ Initial release — typed Python schema for every Hyprland configuration option.
 - **Generated from upstream `ConfigDescriptions.hpp`** — no C++ compiler needed; stdlib-only at runtime
 - **CLI** — `generate_schema.py` with `generate`, `bump`, `snapshot`, and `update-registry` subcommands
 
+[0.7.0]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.7.0
 [0.6.3]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.6.3
 [0.6.2]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.6.2
 [0.6.1]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.6.1
