@@ -71,6 +71,16 @@ class TestLoad:
         with pytest.raises(MigrationError, match="Failed to fetch"):
             load("v0.0.0")
 
+    def test_load_accepts_bare_version(self) -> None:
+        """hyprctl reports ``0.56.1`` where the git tag reads ``v0.56.1``."""
+        schema = load(HYPRLAND_VERSION.removeprefix("v"))
+        assert schema.version == HYPRLAND_VERSION
+        assert schema.options == OPTIONS
+
+    def test_load_bare_older_version_matches_tagged(self) -> None:
+        older = available_versions()[-1]
+        assert load(older.removeprefix("v")).options == load(older).options
+
     def test_load_returns_cached(self) -> None:
         s1 = load(HYPRLAND_VERSION)
         s2 = load(HYPRLAND_VERSION)

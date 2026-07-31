@@ -46,9 +46,13 @@ class HyprOption:
 
         Returns an error message string if validation fails, or ``None`` if
         the value is acceptable. Numeric types are bounds-checked against
-        ``min``/``max``; ``enum_values``, when present, restrict the
-        stringified value to the listed choices.
+        ``min``/``max``; a ``choice`` takes either of the two forms Hyprland
+        accepts; any other ``enum_values`` restrict the stringified value to
+        the listed choices.
         """
+        if self.type == "choice" and self.enum_values:
+            return self._validate_choice(value)
+
         if self.type in ("int", "float", "choice"):
             try:
                 numeric = float(value)
@@ -63,6 +67,27 @@ class HyprOption:
             return f"value {value!r} for {self.key!r} is not one of {self.enum_values}"
 
         return None
+
+    def _validate_choice(self, value: Any) -> str | None:
+        """Accept either a choice name or the integer it maps to.
+
+        Hyprland stores choices as ints numbered from zero in ``enum_values``
+        order, and only its Lua parser also takes the name, so both forms
+        reach here as legitimate input.
+        """
+        names = self.enum_values or ()
+        if value in names:
+            return None
+
+        error = (
+            f"value {value!r} for {self.key!r} is not one of {names} "
+            f"or an index in 0-{len(names) - 1}"
+        )
+        try:
+            index = int(value)
+        except (TypeError, ValueError, OverflowError):
+            return error
+        return None if 0 <= index < len(names) else error
 
 
 # Fields without defaults — always included in dict/JSON output.

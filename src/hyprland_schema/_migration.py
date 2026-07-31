@@ -155,6 +155,17 @@ def load_snapshot(version: str) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 
+def normalize_version(version: str) -> str:
+    """Return *version* in the ``vX.Y.Z`` spelling used throughout the package.
+
+    Hyprland's git tags carry the ``v``, so that is what the bundled versions,
+    the snapshot filenames and the GitHub fetch URL are keyed on. ``hyprctl``
+    reports the bare number, and callers pass that through verbatim.
+    """
+    version = version.strip()
+    return version if version.startswith("v") else f"v{version}"
+
+
 @functools.lru_cache(maxsize=32)
 def build_options(version: str) -> tuple[HyprOption, ...]:
     """Reconstruct the OPTIONS tuple for a given Hyprland version.
@@ -167,6 +178,8 @@ def build_options(version: str) -> tuple[HyprOption, ...]:
     """
     from hyprland_schema._data import HYPRLAND_VERSION, OPTIONS
     from hyprland_schema._migrations._registry import SNAPSHOTS, VERSIONS
+
+    version = normalize_version(version)
 
     if version == HYPRLAND_VERSION:
         return OPTIONS

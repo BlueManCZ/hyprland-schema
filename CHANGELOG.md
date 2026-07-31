@@ -5,6 +5,13 @@ All notable changes to hyprland-schema will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-07-31
+
+### Fixed
+
+- **`choice` options now validate against their names *and* their indices.** `validate()` ran the numeric bounds check and the enum-name check on every choice value, so both forms Hyprland accepts were rejected: the integer Hyprland actually stores (`general:resize_corner` = `2`) failed the name check, and the name (`"top_right"`) failed the numeric check. Choices are now checked as name-or-index, where the index is the value's position in `enum_values`. https://github.com/BlueManCZ/hyprland-state/issues/4
+- **`load()` accepts the version with or without the `v` prefix.** Bundled versions, snapshot filenames and the GitHub fetch URL are all keyed on the git tag (`v0.55.4`), but `hyprctl` reports the bare number (`0.55.4`), so callers passing it through — as hyprland-state does — missed every bundled version, spent a doomed network round-trip on a tag that does not exist, and ended up on whatever the caller's fallback was. Both spellings now resolve to the same schema, and `Schema.version` always reports the tag spelling.
+
 ## [0.7.0] - 2026-07-28
 
 ### Added
@@ -103,6 +110,7 @@ Initial release — typed Python schema for every Hyprland configuration option.
 - **Generated from upstream `ConfigDescriptions.hpp`** — no C++ compiler needed; stdlib-only at runtime
 - **CLI** — `generate_schema.py` with `generate`, `bump`, `snapshot`, and `update-registry` subcommands
 
+[0.7.1]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.7.1
 [0.7.0]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.7.0
 [0.6.3]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.6.3
 [0.6.2]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.6.2

@@ -63,6 +63,10 @@ for opt in schema.get_section("general"):
 border = schema.options_by_key["general:border_size"]
 ```
 
+The version is accepted with or without the `v` prefix, so the bare number
+`hyprctl` reports can be passed straight through; `schema.version` reports the
+tag spelling either way.
+
 Resolution order for `load()`:
 
 1. **Latest bundled version** — instant (pre-parsed).

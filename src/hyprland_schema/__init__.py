@@ -50,6 +50,10 @@ def get_json(*, indent: int | None = 2) -> str:
 def load(version: str) -> Schema:
     """Load the schema for a specific Hyprland version.
 
+    *version* is accepted with or without the ``v`` prefix — ``hyprctl``
+    reports ``0.56.1`` where the git tag reads ``v0.56.1`` — and the returned
+    schema always carries the tag spelling.
+
     Resolution order:
     1. Latest bundled version — instant (pre-parsed).
     2. Older bundled version — reconstructed via reverse migrations.
@@ -58,8 +62,9 @@ def load(version: str) -> Schema:
 
     Results are cached in memory for repeated calls.
     """
-    from hyprland_schema._migration import build_options
+    from hyprland_schema._migration import build_options, normalize_version
 
+    version = normalize_version(version)
     opts = build_options(version)
     return Schema(version=version, options=opts)
 

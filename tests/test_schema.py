@@ -145,6 +145,34 @@ class TestValidate:
         assert opt.validate(1) is None
         assert opt.validate(5) is not None
 
+    def test_choice_accepts_name_and_index(self) -> None:
+        opt = HyprOption(
+            key="k",
+            section=(),
+            name="k",
+            description="",
+            type="choice",
+            default=0,
+            enum_values=("disable", "top_left", "top_right"),
+        )
+        assert opt.validate("top_right") is None
+        assert opt.validate(2) is None
+        assert opt.validate("2") is None
+
+    def test_choice_rejects_unknown_name_and_out_of_range_index(self) -> None:
+        opt = HyprOption(
+            key="k",
+            section=(),
+            name="k",
+            description="",
+            type="choice",
+            default=0,
+            enum_values=("disable", "top_left", "top_right"),
+        )
+        assert opt.validate("bottom_left") is not None
+        assert opt.validate(3) is not None
+        assert opt.validate(-1) is not None
+
 
 class TestGetSection:
     def test_general(self) -> None:
