@@ -378,3 +378,49 @@ class TestEmitPython:
         # choice option has enum_values
         assert "enum_values=" in content
         assert "default_str=" in content
+
+
+# ---------------------------------------------------------------------------
+# _maybe_create_mid_chain_snapshot
+# ---------------------------------------------------------------------------
+
+
+class TestMidChainSnapshot:
+    def test_reconstructs_from_freshly_bumped_options(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The snapshot is built from the new latest options, not the imported _data.py.
+
+        bump runs in a process that imported the pre-bump _data.py, so going
+        through build_options() looked for a snapshot of the new version.
+        """
+        import generate_schema
+        from hyprland_schema import _migration
+
+        border, layout = _SAMPLE_OPTIONS
+        mig_dir = tmp_path / "src" / "hyprland_schema" / "_migrations"
+        write_migration(
+            {
+                "from_version": "v9.0.2",
+                "to_version": "v9.0.1",
+                "operations": [{"op": "remove", "key": layout.key}],
+            },
+            tmp_path,
+        )
+        write_migration(
+            {"from_version": "v9.0.1", "to_version": "v9.0.0", "operations": []}, tmp_path
+        )
+        monkeypatch.setattr(
+            _migration,
+            "load_migration",
+            lambda f, t: json.loads((mig_dir / f"{f}_to_{t}.json").read_text()),
+        )
+        monkeypatch.setattr(generate_schema, "_SNAPSHOT_OPS_THRESHOLD", 0)
+
+        generate_schema._maybe_create_mid_chain_snapshot(
+            tmp_path, ["v9.0.2", "v9.0.1", "v9.0.0"], {"v9.0.2", "v9.0.0"}, _SAMPLE_OPTIONS
+        )
+
+        snapshot = json.loads((mig_dir / "v9.0.1_snapshot.json").read_text())
+        assert snapshot["version"] == "v9.0.1"
+        assert [o["key"] for o in snapshot["options"]] == [border.key]
