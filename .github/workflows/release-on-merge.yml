@@ -1,0 +1,76 @@
+name: Release on update merge
+
+# When a maintainer merges the bot's rolling update PR, tag the merge commit,
+# create the GitHub release from its CHANGELOG entry and dispatch publish.yml.
+# Any other PR — including the one that added this workflow — is ignored.
+#
+# Releases created with GITHUB_TOKEN do not fire `release` workflows, so
+# publish.yml is started explicitly with workflow_dispatch on the new tag.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: library-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: >-
+      github.event.pull_request.merged == true
+      && github.event.pull_request.head.ref == 'bot/hyprland-update'
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && github.event.pull_request.user.login == 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the tag and release
+      actions: write # dispatch publish.yml
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Merge commit is on main
+        env:
+          SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SHA"
+          git merge-base --is-ancestor "$SHA" origin/main
+      - id: check
+        run: python3 scripts/hyprland_release.py check-release
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.check.outputs.tag }}
+          SHA: ${{ steps.check.outputs.sha }}
+          VERSION: ${{ steps.check.outputs.version }}
+        run: |
+          python3 scripts/hyprland_release.py notes "$VERSION" > "$RUNNER_TEMP/notes.md"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists"
+          else
+            gh release create "$TAG" --target "$SHA" --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
+          fi
+          # Whoever created it, the tag must point at this merge commit.
+          tag_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)
+          if [ "$tag_sha" != "$SHA" ]; then
+            echo "::error::$TAG points at $tag_sha, expected $SHA"
+            exit 1
+          fi
+      - name: Dispatch PyPI publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.check.outputs.tag }}
+          VERSION: ${{ steps.check.outputs.version }}
+        run: |
+          status=$(curl -sS -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/hyprland-schema/$VERSION/json")
+          case "$status" in
+            200) echo "hyprland-schema $VERSION is already on PyPI" ;;
+            404) gh workflow run publish.yml --repo "$GITHUB_REPOSITORY" --ref "$TAG" ;;
+            *) echo "::error::PyPI returned HTTP $status"; exit 1 ;;
+          esac

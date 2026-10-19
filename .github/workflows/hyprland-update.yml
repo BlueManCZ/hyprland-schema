@@ -1,0 +1,97 @@
+name: Hyprland update
+
+# Catches up with stable upstream Hyprland releases and proposes them as one
+# rolling PR from bot/hyprland-update. See CONTRIBUTING.md ("Automated updates").
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: hyprland-update
+  cancel-in-progress: false
+
+jobs:
+  # Fetches upstream, runs the generator and every gate with a read-only token.
+  prepare:
+    if: github.repository == 'BlueManCZ/hyprland-schema'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      has_update: ${{ steps.plan.outputs.has_update }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - id: plan
+        run: uv run python scripts/hyprland_release.py plan --output "$RUNNER_TEMP/plan.json"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - if: steps.plan.outputs.has_update == 'true'
+        run: >-
+          uv run python scripts/hyprland_release.py update
+          --plan "$RUNNER_TEMP/plan.json"
+          --body "$RUNNER_TEMP/pr-body.md"
+          --message "$RUNNER_TEMP/commit-message.txt"
+      - if: steps.plan.outputs.has_update == 'true'
+        name: Gates
+        run: |
+          uv sync --locked
+          uv run pytest tests/ -v
+          uv run ruff check src/ tests/ scripts/ generate_schema.py
+          uv run ruff format --check src/ tests/ scripts/ generate_schema.py
+          uv run pyright src/ tests/ scripts/ generate_schema.py
+          uv build
+      - if: steps.plan.outputs.has_update == 'true'
+        name: Commit and bundle
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --update
+          git add src/hyprland_schema/_migrations/
+          git commit --quiet --file "$RUNNER_TEMP/commit-message.txt"
+          git show --stat HEAD
+          git bundle create "$RUNNER_TEMP/update.bundle" HEAD ^origin/main
+          mkdir "$RUNNER_TEMP/update"
+          mv "$RUNNER_TEMP"/{plan.json,pr-body.md,update.bundle} "$RUNNER_TEMP/update/"
+      - if: steps.plan.outputs.has_update == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyprland-update
+          path: ${{ runner.temp }}/update/
+          retention-days: 7
+
+  # Pushes the branch and maintains the PR. Runs no project code or
+  # dependencies: only the stdlib script, git and gh.
+  propose:
+    needs: prepare
+    if: needs.prepare.outputs.has_update == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push bot/hyprland-update
+      pull-requests: write # open / edit the update PR
+      actions: write # dispatch CI for the pushed branch
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: hyprland-update
+          path: ${{ runner.temp }}/update
+      - run: >-
+          python3 scripts/hyprland_release.py propose
+          --plan "$RUNNER_TEMP/update/plan.json"
+          --bundle "$RUNNER_TEMP/update/update.bundle"
+          --body "$RUNNER_TEMP/update/pr-body.md"
+        env:
+          GH_TOKEN: ${{ github.token }}
