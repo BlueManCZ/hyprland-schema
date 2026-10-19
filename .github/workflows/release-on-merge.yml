@@ -14,8 +14,10 @@ on:
 
 permissions: {}
 
+# Keyed by head branch: a group holds one pending run and a newer one cancels
+# it, so closing an unrelated PR must not land in the release's group.
 concurrency:
-  group: library-release
+  group: library-release-${{ github.event.pull_request.head.ref }}
   cancel-in-progress: false
 
 jobs:
