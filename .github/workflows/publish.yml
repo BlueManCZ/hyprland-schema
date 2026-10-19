@@ -1,18 +1,39 @@
 name: Publish to PyPI
 
 on:
+  # Manual releases published from the GitHub UI or gh.
   release:
     types: [published]
+  # Releases created by release-on-merge.yml (GITHUB_TOKEN releases do not
+  # fire `release` events); dispatched on the release tag.
+  workflow_dispatch:
 
 permissions:
-  id-token: write
+  contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: pypi
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - if: github.event_name == 'workflow_dispatch'
+        name: Dispatched on a matching release tag
+        run: |
+          case "$GITHUB_REF" in
+            refs/tags/v*) ;;
+            *) echo "::error::dispatch publish.yml on a release tag, not $GITHUB_REF"; exit 1 ;;
+          esac
+          version=$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::pyproject.toml version $version does not match tag $GITHUB_REF_NAME"
+            exit 1
+          fi
       - uses: astral-sh/setup-uv@v6
       - run: uv build
       - uses: pypa/gh-action-pypi-publish@release/v1

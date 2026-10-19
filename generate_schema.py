@@ -25,7 +25,7 @@ from pathlib import Path
 from time import gmtime, strftime
 from typing import Any
 
-from hyprland_schema._migration import build_options, compute_diff
+from hyprland_schema._migration import _build_from_migrations, build_options, compute_diff
 from hyprland_schema._model import _REQUIRED_FIELDS, HyprOption
 from hyprland_schema._parser import fetch_header, parse_header
 from hyprland_schema._schema import Schema, source_url
@@ -422,7 +422,7 @@ def _cmd_bump(version: str, input_path: Path | None, output_dir: Path) -> None:
     reg_path, version_list, snapshot_set = update_registry(output_dir)
     print(f"Updated {reg_path.name}", file=sys.stderr)
 
-    _maybe_create_mid_chain_snapshot(output_dir, version_list, snapshot_set)
+    _maybe_create_mid_chain_snapshot(output_dir, version_list, snapshot_set, new_options)
 
     # A mid-chain snapshot can supersede a migration we just wrote — for example
     # when bumping leaves the chain at [new, old, even-older] and the snapshot
@@ -442,9 +442,15 @@ def _cmd_bump(version: str, input_path: Path | None, output_dir: Path) -> None:
 
 
 def _maybe_create_mid_chain_snapshot(
-    output_dir: Path, version_list: list[str], snapshots: set[str]
+    output_dir: Path,
+    version_list: list[str],
+    snapshots: set[str],
+    latest_options: Sequence[HyprOption],
 ) -> None:
-    """Auto-create a mid-chain snapshot if the migration chain has grown heavy."""
+    """Auto-create a mid-chain snapshot if the migration chain has grown heavy.
+
+    *latest_options* are the options just written for ``version_list[0]``.
+    """
     if len(version_list) <= 2:
         return
 
@@ -456,7 +462,12 @@ def _maybe_create_mid_chain_snapshot(
     if mid_ver in snapshots:
         return
 
-    mid_opts = build_options(mid_ver)
+    # Not build_options(): this process imported _data.py before the bump, so
+    # it would start from the previous version and look for a snapshot of the
+    # new one that does not exist yet.
+    mid_opts = _build_from_migrations(
+        mid_ver, tuple(latest_options), version_list[0], tuple(version_list), frozenset(snapshots)
+    )
     snap_path = write_snapshot(mid_opts, mid_ver, output_dir)
     update_registry(output_dir)
     print(
