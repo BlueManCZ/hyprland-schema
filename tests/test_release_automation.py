@@ -724,6 +724,25 @@ class TestReleaseGuard:
 
 
 class TestRepositoryFiles:
+    def test_release_requires_validation_of_exact_merge_commit(self) -> None:
+        workflow = (ROOT / ".github/workflows/release-on-merge.yml").read_text()
+        validation, release = workflow.split("\n  release:\n", 1)
+        assert "\n  validate:\n" in validation
+        assert "contents: read" in validation
+        assert "contents: write" not in validation
+        assert "ref: ${{ github.event.pull_request.merge_commit_sha }}" in validation
+        for gate in (
+            "uv sync --locked",
+            "uv run pytest",
+            "uv run ruff check",
+            "uv run ruff format --check",
+            "uv run pyright",
+            "uv build",
+        ):
+            assert gate in validation
+        assert "    needs: validate\n" in release
+        assert "always()" not in release
+
     def test_pyproject_version_line(self) -> None:
         text = set_project_version((ROOT / "pyproject.toml").read_text(), "99.0.0")
         assert '\nversion = "99.0.0"\n' in text

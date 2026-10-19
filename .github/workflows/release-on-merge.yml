@@ -19,7 +19,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    if: >-
+      github.event.pull_request.merged == true
+      && github.event.pull_request.head.ref == 'bot/hyprland-update'
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && github.event.pull_request.user.login == 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - name: Validate exact merged release source
+        run: |
+          uv sync --locked
+          uv run pytest tests/ -v
+          uv run ruff check src/ tests/ scripts/ generate_schema.py
+          uv run ruff format --check src/ tests/ scripts/ generate_schema.py
+          uv run pyright src/ tests/ scripts/ generate_schema.py
+          uv build
+
   release:
+    needs: validate
     if: >-
       github.event.pull_request.merged == true
       && github.event.pull_request.head.ref == 'bot/hyprland-update'
