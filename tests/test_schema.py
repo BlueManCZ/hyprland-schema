@@ -223,14 +223,12 @@ class TestAllOptions:
         for opt in OPTIONS:
             assert opt.type in known, f"{opt.key}: unknown type {opt.type}"
 
-    def test_int_options_have_range(self) -> None:
-        # Upstream may leave an int open-ended (e.g. `input:tablettool:eraser_button_override`
-        # declares only `.min`), so only the lower bound is guaranteed.
+    def test_int_option_bounds_are_consistent(self) -> None:
+        # Bounds are optional: v0.57.0 declares plain MS<Int>(..., default)
+        # options as well as one-sided ranges. Only compare bounds if both exist.
         for opt in OPTIONS:
-            if opt.type == "int":
-                assert opt.min is not None, f"{opt.key}: int without min"
-                if opt.max is not None:
-                    assert opt.max >= opt.min, f"{opt.key}: max {opt.max} below min {opt.min}"
+            if opt.type == "int" and opt.min is not None and opt.max is not None:
+                assert opt.max >= opt.min, f"{opt.key}: max {opt.max} below min {opt.min}"
 
     def test_choice_options_have_enum(self) -> None:
         for opt in OPTIONS:
