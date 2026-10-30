@@ -260,6 +260,42 @@ class TestParseNewFormat:
         assert opt.section == ("general",)
         assert opt.name == "border_size"
 
+    @pytest.mark.parametrize(
+        ("key", "default"),
+        [("misc:new_float_force_onscreen", 2), ("misc:float_force_onscreen", 0)],
+    )
+    def test_unbounded_int_preserves_upstream_declaration(self, key: str, default: int) -> None:
+        # Hyprland v0.57.0 declares these without an options block. Do not
+        # invent bounds or silently drop the option when metadata is absent.
+        (opt,) = parse_header(f'MS<Int>("{key}", "on-screen placement", {default}),')
+        assert opt.key == key
+        assert opt.type == "int"
+        assert opt.default == default
+        assert opt.min is None
+        assert opt.max is None
+        assert opt.validate(-100) is None
+        assert opt.validate(100) is None
+        assert opt.validate("not a number") is not None
+        assert "min" not in opt.to_dict()
+        assert "max" not in opt.to_dict()
+        assert HyprOption.from_dict(opt.to_dict()) == opt
+
+    @pytest.mark.parametrize(
+        ("bounds", "minimum", "maximum"),
+        [("{}", None, None), ("{.min = 0}", 0, None), ("{.max = 10}", None, 10)],
+    )
+    def test_optional_int_bounds(
+        self, bounds: str, minimum: int | None, maximum: int | None
+    ) -> None:
+        (opt,) = parse_header(f'MS<Int>("test:integer", "optional bounds", 2, {bounds}),')
+        assert opt.type == "int"
+        assert opt.default == 2
+        assert opt.min == minimum
+        assert opt.max == maximum
+        assert (opt.validate(-1) is None) == (minimum is None)
+        assert (opt.validate(11) is None) == (maximum is None)
+        assert opt.validate(2) is None
+
     def test_bool_option(self) -> None:
         opt = self._by_key["general:resize_on_border"]
         assert opt.type == "bool"
