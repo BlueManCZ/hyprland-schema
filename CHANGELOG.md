@@ -5,6 +5,30 @@ All notable changes to hyprland-schema will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-10-31
+
+### Added
+
+- **Hyprland v0.57.0 schema** — 407 options across 22 sections; 55 added, 1 removed, 16 changed
+  - Added: `decoration:blur:variant`, `decoration:blur:proportional`, `decoration:blur:glass:refraction`, `decoration:blur:glass:size`, `decoration:blur:glass:roughness`, `decoration:blur:acrylic:refraction`, `decoration:blur:acrylic:bulb`, `decoration:blur:acrylic:clarity`, `decoration:blur:acrylic:aberration`, `decoration:blur:acrylic:tint`, `decoration:blur:drops:speed`, `decoration:blur:heat_shimmer:speed`, `decoration:blur:aurora:speed`, `decoration:blur:aurora:intensity`, `decoration:blur:aurora:color1`, `decoration:blur:aurora:color2`, `decoration:blur:haze:intensity`, `decoration:blur:haze:iridescence`, `decoration:blur:ripple:strength`, `decoration:blur:ripple:radius`, `decoration:blur:ripple:width`, `decoration:blur:ripple:duration`, `decoration:blur:water:strength`, `decoration:blur:water:radius`, `decoration:blur:water:speed`, `decoration:blur:water:damping`, `decoration:blur:water:duration`, `decoration:blur:fluid_jar:color`, `decoration:blur:fluid_jar:speed`, `decoration:blur:fluid_jar:fill_amount`, `decoration:blur:fluid_jar:mass`, `decoration:blur:fluid_jar:precision`, `decoration:blur:fluid_jar:turbulence`, `decoration:blur:fluid_jar:distortion`, `decoration:wobble:enabled`, `decoration:wobble:mesh`, `decoration:wobble:stiffness`, `decoration:wobble:damping`, `decoration:wobble:mass`, `decoration:wobble:intensity`, `decoration:wobble:value_epsilon`, `decoration:wobble:velocity_epsilon`, `input:swallow_focus_click`, `input:tablet:enabled`, `misc:bell_sound`, `misc:new_float_force_onscreen`, `misc:float_force_onscreen`, `layers:allow_new_top_layers_over_existing_fullscreen`, `layers:layers_hog_keyboard_focus`, `binds:client_requested_fs_uses_layout_handler`, `binds:drag_center_window`, `render:async_commit`, `render:not_shown_fifo_lock`, `cursor:warp_on_monitor_change`, `debug:invalidate_buffers`
+  - Removed: `debug:fifo_pending_workaround`
+  - `decoration:rounding`: max `20` → `100`
+  - `decoration:rounding_power`: min `2` → `1`
+  - `decoration:shadow:scale`: min `0` → `0.05`; max `1` → `2`
+  - `decoration:blur:enabled`: description updated
+  - `input:scroll_factor`: max `2` → `100`
+  - `input:touchpad:scroll_factor`: max `2` → `100`
+  - `group:drag_into_group`: enum_values `["disabled", "enabled", "only when dragging into the groupbar"]` → `["disabled", "enabled", "only_into_groupbar"]`
+  - `group:groupbar:indicator_height`: min `1` → `0`
+  - `group:groupbar:rounding`: max `20` → `40`
+  - `group:groupbar:rounding_power`: min `2` → `1`
+  - `group:groupbar:gradient_rounding`: max `20` → `40`
+  - `group:groupbar:gradient_rounding_power`: min `2` → `1`
+  - `misc:exit_window_retains_fullscreen`: type `"bool"` → `"choice"`; enum_values `["disable", "enable", "only_when_grouped", "only_when_nongrouped"]` added; default_str `"disable"` added; description updated
+  - `binds:workspace_back_and_forth`: type `"bool"` → `"choice"`; enum_values `["disabled", "all_monitors", "per_monitor"]` added; default_str `"disabled"` added; description updated
+  - `scrolling:follow_focus`: type `"bool"` → `"int"`; description updated
+  - `quirks:skip_non_kms_dmabuf_formats`: default `false` → `true`
+
 ## [0.7.2] - 2026-10-19
 
 ### Changed
@@ -116,6 +140,7 @@ Initial release — typed Python schema for every Hyprland configuration option.
 - **Generated from upstream `ConfigDescriptions.hpp`** — no C++ compiler needed; stdlib-only at runtime
 - **CLI** — `generate_schema.py` with `generate`, `bump`, `snapshot`, and `update-registry` subcommands
 
+[0.8.0]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.8.0
 [0.7.2]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.7.2
 [0.7.1]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.7.1
 [0.7.0]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.7.0
