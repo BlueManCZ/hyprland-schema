@@ -5,6 +5,12 @@ All notable changes to hyprland-schema will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] - 2026-11-01
+
+### Added
+
+- **Hyprland v0.57.0 schema** — 407 options across 22 sections. Adds the `layers` category, blur variants and their per-variant parameters, window wobble, `no_glow`/`no_wobble`/`no_xdg_drags` rule metadata, tablet enablement, cursor warp-on-monitor-change, and the new render scheduling options
+
 ## [0.7.2] - 2026-10-19
 
 ### Changed
