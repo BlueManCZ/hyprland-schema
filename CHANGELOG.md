@@ -5,6 +5,13 @@ All notable changes to hyprland-schema will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2026-11-03
+
+### Changed
+
+- **Hyprland v0.57.1 schema** — 407 options across 22 sections; 0 added, 0 removed, 1 changed
+  - `quirks:skip_non_kms_dmabuf_formats`: default `true` → `false`
+
 ## [0.8.0] - 2026-10-31
 
 ### Added
@@ -140,6 +147,7 @@ Initial release — typed Python schema for every Hyprland configuration option.
 - **Generated from upstream `ConfigDescriptions.hpp`** — no C++ compiler needed; stdlib-only at runtime
 - **CLI** — `generate_schema.py` with `generate`, `bump`, `snapshot`, and `update-registry` subcommands
 
+[0.8.1]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.8.1
 [0.8.0]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.8.0
 [0.7.2]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.7.2
 [0.7.1]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.7.1

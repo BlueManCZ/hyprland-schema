@@ -1,0 +1,17 @@
+{
+  "format_version": 1,
+  "from_version": "v0.57.1",
+  "to_version": "v0.57.0",
+  "operations": [
+    {
+      "op": "modify",
+      "key": "quirks:skip_non_kms_dmabuf_formats",
+      "fields": {
+        "default": [
+          false,
+          true
+        ]
+      }
+    }
+  ]
+}
