@@ -1,0 +1,449 @@
+{
+  "format_version": 1,
+  "from_version": "v0.57.0",
+  "to_version": "v0.56.2",
+  "operations": [
+    {
+      "op": "modify",
+      "key": "decoration:rounding",
+      "fields": {
+        "max": [
+          100,
+          20
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "decoration:rounding_power",
+      "fields": {
+        "min": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "decoration:shadow:scale",
+      "fields": {
+        "max": [
+          2,
+          1
+        ],
+        "min": [
+          0.05,
+          0
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "decoration:blur:enabled",
+      "fields": {
+        "description": [
+          "enable window background blur",
+          "enable kawase window background blur"
+        ]
+      }
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:variant"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:proportional"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:glass:refraction"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:glass:size"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:glass:roughness"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:acrylic:refraction"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:acrylic:bulb"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:acrylic:clarity"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:acrylic:aberration"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:acrylic:tint"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:drops:speed"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:heat_shimmer:speed"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:aurora:speed"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:aurora:intensity"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:aurora:color1"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:aurora:color2"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:haze:intensity"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:haze:iridescence"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:ripple:strength"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:ripple:radius"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:ripple:width"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:ripple:duration"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:water:strength"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:water:radius"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:water:speed"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:water:damping"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:water:duration"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:fluid_jar:color"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:fluid_jar:speed"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:fluid_jar:fill_amount"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:fluid_jar:mass"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:fluid_jar:precision"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:fluid_jar:turbulence"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:blur:fluid_jar:distortion"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:wobble:enabled"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:wobble:mesh"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:wobble:stiffness"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:wobble:damping"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:wobble:mass"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:wobble:intensity"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:wobble:value_epsilon"
+    },
+    {
+      "op": "remove",
+      "key": "decoration:wobble:velocity_epsilon"
+    },
+    {
+      "op": "modify",
+      "key": "input:scroll_factor",
+      "fields": {
+        "max": [
+          100,
+          2
+        ]
+      }
+    },
+    {
+      "op": "remove",
+      "key": "input:swallow_focus_click"
+    },
+    {
+      "op": "modify",
+      "key": "input:touchpad:scroll_factor",
+      "fields": {
+        "max": [
+          100,
+          2
+        ]
+      }
+    },
+    {
+      "op": "remove",
+      "key": "input:tablet:enabled"
+    },
+    {
+      "op": "modify",
+      "key": "group:drag_into_group",
+      "fields": {
+        "enum_values": [
+          [
+            "disabled",
+            "enabled",
+            "only_into_groupbar"
+          ],
+          [
+            "disabled",
+            "enabled",
+            "only when dragging into the groupbar"
+          ]
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "group:groupbar:indicator_height",
+      "fields": {
+        "min": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "group:groupbar:rounding",
+      "fields": {
+        "max": [
+          40,
+          20
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "group:groupbar:rounding_power",
+      "fields": {
+        "min": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "group:groupbar:gradient_rounding",
+      "fields": {
+        "max": [
+          40,
+          20
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "group:groupbar:gradient_rounding_power",
+      "fields": {
+        "min": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "misc:exit_window_retains_fullscreen",
+      "fields": {
+        "description": [
+          "whether closing a fullscreen window makes the next focused window to be fullscreened",
+          "if true, closing a fullscreen window makes the next focused window fullscreen"
+        ],
+        "default_str": [
+          "disable",
+          null
+        ],
+        "type": [
+          "choice",
+          "bool"
+        ],
+        "enum_values": [
+          [
+            "disable",
+            "enable",
+            "only_when_grouped",
+            "only_when_nongrouped"
+          ],
+          null
+        ]
+      }
+    },
+    {
+      "op": "remove",
+      "key": "misc:bell_sound"
+    },
+    {
+      "op": "remove",
+      "key": "misc:new_float_force_onscreen"
+    },
+    {
+      "op": "remove",
+      "key": "misc:float_force_onscreen"
+    },
+    {
+      "op": "remove",
+      "key": "layers:allow_new_top_layers_over_existing_fullscreen"
+    },
+    {
+      "op": "remove",
+      "key": "layers:layers_hog_keyboard_focus"
+    },
+    {
+      "op": "modify",
+      "key": "binds:workspace_back_and_forth",
+      "fields": {
+        "description": [
+          "An attempt to switch to the currently focused workspace will instead switch to the previous workspace.",
+          "If enabled, an attempt to switch to the currently focused workspace will instead switch to the previous workspace."
+        ],
+        "default_str": [
+          "disabled",
+          null
+        ],
+        "type": [
+          "choice",
+          "bool"
+        ],
+        "enum_values": [
+          [
+            "disabled",
+            "all_monitors",
+            "per_monitor"
+          ],
+          null
+        ]
+      }
+    },
+    {
+      "op": "remove",
+      "key": "binds:client_requested_fs_uses_layout_handler"
+    },
+    {
+      "op": "remove",
+      "key": "binds:drag_center_window"
+    },
+    {
+      "op": "remove",
+      "key": "render:async_commit"
+    },
+    {
+      "op": "remove",
+      "key": "render:not_shown_fifo_lock"
+    },
+    {
+      "op": "remove",
+      "key": "cursor:warp_on_monitor_change"
+    },
+    {
+      "op": "remove",
+      "key": "debug:invalidate_buffers"
+    },
+    {
+      "op": "modify",
+      "key": "scrolling:follow_focus",
+      "fields": {
+        "description": [
+          "Behaviour of the scrolling tape when a window is in focus. 0: Focus doesn't cause tape move. 1: Focus may cause tape move, mouse click always moves the tape. 2: Focus may cause tape move.",
+          "when a window is focused, should the layout move to bring it into view automatically"
+        ],
+        "type": [
+          "int",
+          "bool"
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "quirks:skip_non_kms_dmabuf_formats",
+      "fields": {
+        "default": [
+          true,
+          false
+        ]
+      }
+    },
+    {
+      "op": "add",
+      "option": {
+        "key": "debug:fifo_pending_workaround",
+        "section": [
+          "debug"
+        ],
+        "name": "fifo_pending_workaround",
+        "description": "Fifo workaround for empty pending list",
+        "type": "bool",
+        "default": false
+      }
+    }
+  ]
+}
