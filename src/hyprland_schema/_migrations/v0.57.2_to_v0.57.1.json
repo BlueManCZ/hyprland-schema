@@ -1,0 +1,27 @@
+{
+  "format_version": 1,
+  "from_version": "v0.57.2",
+  "to_version": "v0.57.1",
+  "operations": [
+    {
+      "op": "modify",
+      "key": "decoration:shadow:scale",
+      "fields": {
+        "min": [
+          0.01,
+          0.05
+        ]
+      }
+    },
+    {
+      "op": "modify",
+      "key": "cursor:inactive_timeout",
+      "fields": {
+        "max": [
+          1000,
+          20
+        ]
+      }
+    }
+  ]
+}

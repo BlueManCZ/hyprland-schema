@@ -5,6 +5,14 @@ All notable changes to hyprland-schema will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-11-09
+
+### Changed
+
+- **Hyprland v0.57.2 schema** — 407 options across 22 sections; 0 added, 0 removed, 2 changed
+  - `decoration:shadow:scale`: min `0.05` → `0.01`
+  - `cursor:inactive_timeout`: max `20` → `1000`
+
 ## [0.8.1] - 2026-11-03
 
 ### Changed
@@ -147,6 +155,7 @@ Initial release — typed Python schema for every Hyprland configuration option.
 - **Generated from upstream `ConfigDescriptions.hpp`** — no C++ compiler needed; stdlib-only at runtime
 - **CLI** — `generate_schema.py` with `generate`, `bump`, `snapshot`, and `update-registry` subcommands
 
+[0.8.2]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.8.2
 [0.8.1]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.8.1
 [0.8.0]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.8.0
 [0.7.2]: https://github.com/BlueManCZ/hyprland-schema/releases/tag/v0.7.2
